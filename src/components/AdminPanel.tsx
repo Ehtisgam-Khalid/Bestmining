@@ -130,9 +130,19 @@ export default function AdminPanel() {
                       {deposit.amount} PKR
                     </span>
                   </div>
-                  <p className="text-sm font-mono text-zinc-400 mt-2 bg-zinc-950 p-2 rounded border border-zinc-800 break-all">
-                    Ref: {deposit.screenshotUrl}
-                  </p>
+                  <div className="bg-zinc-950 p-2 rounded border border-zinc-800 break-all overflow-hidden">
+                    <p className="text-xs text-zinc-500 mb-1">Payment Proof:</p>
+                    {deposit.screenshotUrl.startsWith("data:image") ? (
+                      <div className="relative group max-w-[200px] cursor-zoom-in" onClick={() => window.open(deposit.screenshotUrl, '_blank')}>
+                         <img src={deposit.screenshotUrl} className="rounded-lg border border-zinc-800" alt="Proof" />
+                         <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-[10px] text-white font-bold">
+                           CLICK TO EXPAND
+                         </div>
+                      </div>
+                    ) : (
+                      <p className="text-sm font-mono text-zinc-300 break-all">{deposit.screenshotUrl}</p>
+                    )}
+                  </div>
                 </div>
 
                 <div className="flex items-center gap-3 w-full md:w-auto">

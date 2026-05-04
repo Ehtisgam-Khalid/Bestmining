@@ -78,7 +78,7 @@ service cloud.firestore {
       allow create: if isSignedIn() && 
         incoming().userId == request.auth.uid &&
         incoming().status == 'pending' &&
-        incoming().amount >= 500;
+        incoming().amount >= 600;
       allow update: if isAdmin() && 
         incoming().diff(existing()).affectedKeys().hasOnly(['status']) &&
         incoming().status in ['paid', 'rejected'];
