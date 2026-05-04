@@ -1,0 +1,86 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 0. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Helpers ---
+    function isSignedIn() { return request.auth != null; }
+    function isOwner(userId) { return isSignedIn() && request.auth.uid == userId; }
+    function isAdmin() { return isSignedIn() && request.auth.token.email == 'ehtisham@gmail.com'; }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+
+    function isValidId(id) { 
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); 
+    }
+
+    // --- User Profile Validation ---
+    function isValidUserProfile(data) {
+      return data.keys().hasAll(['uid', 'email', 'balance', 'isAdmin', 'createdAt']) &&
+             data.keys().size() == 5 &&
+             data.uid is string && data.uid.size() <= 128 &&
+             data.email is string && data.email.size() <= 128 &&
+             data.balance is number &&
+             data.isAdmin is bool &&
+             data.createdAt is string;
+    }
+
+    match /users/{userId} {
+      allow get: if isOwner(userId) || isAdmin();
+      allow list: if isAdmin();
+      
+      allow create: if isSignedIn() && isOwner(userId) && 
+        isValidUserProfile(incoming()) &&
+        incoming().balance == 0 &&
+        incoming().isAdmin == (incoming().email == 'ehtisham@gmail.com');
+
+      allow update: if (
+        isAdmin() || (isOwner(userId) && (
+          // Action: Balance & Game Meta update
+          (incoming().diff(existing()).affectedKeys().hasOnly(['balance', 'gameCount'])) ||
+          // Action: Email setup
+          (incoming().diff(existing()).affectedKeys().hasOnly(['email']))
+        ))
+      );
+    }
+
+    // --- Deposit Validation ---
+    function isValidDeposit(data) {
+      return data.keys().hasAll(['userId', 'email', 'amount', 'screenshotUrl', 'status', 'createdAt']) &&
+             data.keys().size() == 6 &&
+             data.userId is string &&
+             data.amount is number && data.amount >= 300 &&
+             data.screenshotUrl is string && data.screenshotUrl.size() <= 600 &&
+             data.status in ['pending', 'approved', 'rejected'];
+    }
+
+    match /deposits/{depositId} {
+      allow get: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
+      allow list: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
+      
+      allow create: if isSignedIn() && 
+        incoming().userId == request.auth.uid &&
+        incoming().status == 'pending' &&
+        isValidDeposit(incoming());
+        
+      allow update: if isAdmin() && 
+        incoming().diff(existing()).affectedKeys().hasOnly(['status']) &&
+        incoming().status in ['approved', 'rejected'];
+    }
+
+    match /withdrawals/{withdrawalId} {
+      allow get: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
+      allow list: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
+      allow create: if isSignedIn() && 
+        incoming().userId == request.auth.uid &&
+        incoming().status == 'pending' &&
+        incoming().amount >= 300;
+      allow update: if isAdmin() && 
+        incoming().diff(existing()).affectedKeys().hasOnly(['status']) &&
+        incoming().status in ['paid', 'rejected'];
+    }
+  }
+}
