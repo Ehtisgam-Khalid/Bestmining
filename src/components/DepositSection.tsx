@@ -17,6 +17,8 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
+import { handleFirestoreError, OperationType } from "../lib/utils";
+
 interface DepositSectionProps {
   user: UserProfile;
 }
@@ -79,7 +81,7 @@ export default function DepositSection({ user }: DepositSectionProps) {
       setProof("");
       setImagePreview(null);
     } catch (error) {
-      console.error(error);
+      handleFirestoreError(error, OperationType.WRITE, "deposits");
     } finally {
       setLoading(false);
     }

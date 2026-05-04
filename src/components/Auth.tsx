@@ -40,7 +40,7 @@ export default function Auth({ onAuthSuccess }: AuthProps) {
             balance: 0,
             totalDeposits: 0,
             gameCount: 0,
-            isAdmin: userCredential.user.email === "ehtisham@gmail.com",
+            isAdmin: userCredential.user.email === "ehtishamarain567@gmail.com",
             createdAt: new Date().toISOString()
           };
           await setDoc(doc(db, "users", profile.uid), profile);
@@ -54,7 +54,7 @@ export default function Auth({ onAuthSuccess }: AuthProps) {
           balance: 0,
           totalDeposits: 0,
           gameCount: 0,
-          isAdmin: userCredential.user.email === "ehtisham@gmail.com",
+          isAdmin: userCredential.user.email === "ehtishamarain567@gmail.com",
           createdAt: new Date().toISOString()
         };
         await setDoc(doc(db, "users", profile.uid), profile);

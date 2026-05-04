@@ -9,7 +9,7 @@ service cloud.firestore {
     // --- Helpers ---
     function isSignedIn() { return request.auth != null; }
     function isOwner(userId) { return isSignedIn() && request.auth.uid == userId; }
-    function isAdmin() { return isSignedIn() && request.auth.token.email == 'ehtisham@gmail.com'; }
+    function isAdmin() { return isSignedIn() && request.auth.token.email == 'ehtishamarain567@gmail.com'; }
     function incoming() { return request.resource.data; }
     function existing() { return resource.data; }
 
@@ -19,11 +19,12 @@ service cloud.firestore {
 
     // --- User Profile Validation ---
     function isValidUserProfile(data) {
-      return data.keys().hasAll(['uid', 'email', 'balance', 'isAdmin', 'createdAt']) &&
-             data.keys().size() == 5 &&
+      return data.keys().hasAll(['uid', 'email', 'balance', 'totalDeposits', 'gameCount', 'isAdmin', 'createdAt']) &&
              data.uid is string && data.uid.size() <= 128 &&
              data.email is string && data.email.size() <= 128 &&
              data.balance is number &&
+             data.totalDeposits is number &&
+             data.gameCount is number &&
              data.isAdmin is bool &&
              data.createdAt is string;
     }
@@ -35,7 +36,7 @@ service cloud.firestore {
       allow create: if isSignedIn() && isOwner(userId) && 
         isValidUserProfile(incoming()) &&
         incoming().balance == 0 &&
-        incoming().isAdmin == (incoming().email == 'ehtisham@gmail.com');
+        incoming().isAdmin == (incoming().email == 'ehtishamarain567@gmail.com');
 
       allow update: if (
         isAdmin() || (isOwner(userId) && (
@@ -50,10 +51,9 @@ service cloud.firestore {
     // --- Deposit Validation ---
     function isValidDeposit(data) {
       return data.keys().hasAll(['userId', 'email', 'amount', 'screenshotUrl', 'status', 'createdAt']) &&
-             data.keys().size() == 6 &&
              data.userId is string &&
              data.amount is number && data.amount >= 300 &&
-             data.screenshotUrl is string && data.screenshotUrl.size() <= 600 &&
+             data.screenshotUrl is string && data.screenshotUrl.size() <= 1500000 &&
              data.status in ['pending', 'approved', 'rejected'];
     }
 
