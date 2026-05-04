@@ -19,19 +19,19 @@ interface WithdrawSectionProps {
 }
 
 export default function WithdrawSection({ user }: WithdrawSectionProps) {
-  const [amount, setAmount] = useState(300);
+  const [amount, setAmount] = useState(500);
   const [accountNumber, setAccountNumber] = useState("");
   const [accountName, setAccountName] = useState("");
   const [provider, setProvider] = useState("EasyPaisa");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
-  // Minimum 300 win/balance logic
-  const canWithdraw = user.balance >= 300;
+  // Minimum 500 balance logic
+  const canWithdraw = user.balance >= 500;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!canWithdraw || amount > user.balance || amount < 300) return;
+    if (!canWithdraw || amount > user.balance || amount < 500) return;
     setLoading(true);
 
     try {
@@ -68,17 +68,17 @@ export default function WithdrawSection({ user }: WithdrawSectionProps) {
         </div>
         <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">Withdrawal Locked</h2>
         <p className="text-zinc-400 max-w-sm mx-auto text-sm leading-relaxed mb-8">
-          To unlock withdrawals, you must win at least <span className="text-yellow-500 font-bold">300 PKR</span>. 
+          To unlock withdrawals, you must win at least <span className="text-yellow-500 font-bold">500 PKR</span>. 
           Keep mining and hit the jackpot!
         </p>
         <div className="h-2 w-full bg-zinc-800 rounded-full overflow-hidden max-w-xs mx-auto">
            <div 
              className="h-full bg-yellow-500 transition-all duration-1000" 
-             style={{ width: `${Math.min(100, (user.balance / 300) * 100)}%` }}
+             style={{ width: `${Math.min(100, (user.balance / 500) * 100)}%` }}
            />
         </div>
         <div className="mt-4 text-xs font-mono text-zinc-500 uppercase">
-           {user.balance.toFixed(0)} / 300 PKR EARNED
+           {user.balance.toFixed(0)} / 500 PKR EARNED
         </div>
       </div>
     );
@@ -138,7 +138,7 @@ export default function WithdrawSection({ user }: WithdrawSectionProps) {
               <div className="relative">
                  <input
                   type="number"
-                  min="300"
+                  min="500"
                   max={user.balance}
                   required
                   value={amount}
