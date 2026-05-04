@@ -9,7 +9,13 @@ service cloud.firestore {
     // --- Helpers ---
     function isSignedIn() { return request.auth != null; }
     function isOwner(userId) { return isSignedIn() && request.auth.uid == userId; }
-    function isAdmin() { return isSignedIn() && request.auth.token.email == 'ehtishamarain567@gmail.com'; }
+    function isAdmin() { 
+      return isSignedIn() && (
+        request.auth.token.email == 'ehtishamarain567@gmail.com' ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true)
+      );
+    }
     function incoming() { return request.resource.data; }
     function existing() { return resource.data; }
 
@@ -30,7 +36,7 @@ service cloud.firestore {
     }
 
     match /users/{userId} {
-      allow get: if isOwner(userId) || isAdmin();
+      allow get: if isSignedIn() && (isOwner(userId) || isAdmin());
       allow list: if isAdmin();
       
       allow create: if isSignedIn() && isOwner(userId) && 
@@ -38,14 +44,12 @@ service cloud.firestore {
         incoming().balance == 0 &&
         incoming().isAdmin == (incoming().email == 'ehtishamarain567@gmail.com');
 
-      allow update: if (
-        isAdmin() || (isOwner(userId) && (
-          // Action: Balance & Game Meta update
-          (incoming().diff(existing()).affectedKeys().hasOnly(['balance', 'gameCount'])) ||
-          // Action: Email setup
-          (incoming().diff(existing()).affectedKeys().hasOnly(['email']))
-        ))
-      );
+      allow update: if isAdmin() || (isOwner(userId) && (
+        // Action: Balance & Game Meta update
+        (incoming().diff(existing()).affectedKeys().hasOnly(['balance', 'gameCount'])) ||
+        // Action: Email setup
+        (incoming().diff(existing()).affectedKeys().hasOnly(['email']))
+      ));
     }
 
     // --- Deposit Validation ---
@@ -66,9 +70,7 @@ service cloud.firestore {
         incoming().status == 'pending' &&
         isValidDeposit(incoming());
         
-      allow update: if isAdmin() && 
-        incoming().diff(existing()).affectedKeys().hasOnly(['status']) &&
-        incoming().status in ['approved', 'rejected'];
+      allow update: if isAdmin();
       allow delete: if isAdmin();
     }
 
@@ -79,9 +81,7 @@ service cloud.firestore {
         incoming().userId == request.auth.uid &&
         incoming().status == 'pending' &&
         incoming().amount >= 600;
-      allow update: if isAdmin() && 
-        incoming().diff(existing()).affectedKeys().hasOnly(['status']) &&
-        incoming().status in ['paid', 'rejected'];
+      allow update: if isAdmin();
       allow delete: if isAdmin();
     }
   }

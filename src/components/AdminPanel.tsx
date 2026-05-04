@@ -12,6 +12,7 @@ export default function AdminPanel() {
   const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
   const [activeTab, setActiveTab] = useState<"deposits" | "withdrawals">("deposits");
   const [loading, setLoading] = useState(true);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   useEffect(() => {
     const qD = query(collection(db, "deposits"));
@@ -31,22 +32,28 @@ export default function AdminPanel() {
   }, []);
 
   const handleApproveDeposit = async (deposit: Deposit) => {
-    if (!deposit.id) return;
+    if (!deposit.id || !deposit.userId) return;
+    setLoading(true);
+    setActionError(null);
     try {
-      await runTransaction(db, async (transaction) => {
-        const userRef = doc(db, "users", deposit.userId);
-        const depositRef = doc(db, "deposits", deposit.id!);
-        
-        transaction.update(userRef, {
-          balance: increment(deposit.amount),
-          totalDeposits: increment(deposit.amount)
-        });
-        transaction.update(depositRef, {
-          status: "approved"
-        });
+      // First update the user profile
+      const userRef = doc(db, "users", deposit.userId);
+      await updateDoc(userRef, {
+        balance: increment(deposit.amount),
+        totalDeposits: increment(deposit.amount)
       });
-    } catch (error) {
-      handleFirestoreError(error, OperationType.WRITE, "transaction:approve");
+      
+      // Then update the deposit status
+      const depositRef = doc(db, "deposits", deposit.id);
+      await updateDoc(depositRef, {
+        status: "approved"
+      });
+    } catch (error: any) {
+      console.error("Approval error:", error);
+      setActionError(error.message || "Failed to approve deposit");
+      handleFirestoreError(error, OperationType.WRITE, "approve_deposit");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -82,6 +89,12 @@ export default function AdminPanel() {
           <Shield className="w-6 h-6 text-yellow-500" />
           Admin Control Center
         </h2>
+        
+        {actionError && (
+          <div className="bg-red-500/10 border border-red-500/20 text-red-500 px-4 py-2 rounded-xl text-xs font-bold animate-pulse">
+            ERROR: {actionError}
+          </div>
+        )}
         
         <div className="flex bg-zinc-900 border border-zinc-800 p-1 rounded-xl">
            <button 
