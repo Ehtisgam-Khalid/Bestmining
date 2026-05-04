@@ -3,8 +3,9 @@ import { collection, query, onSnapshot, doc, updateDoc, increment, runTransactio
 import { db } from "../lib/firebase";
 import { UserProfile, Deposit, Withdrawal } from "../types";
 import { handleFirestoreError, OperationType } from "../lib/utils";
-import { Check, X, Shield, Clock, Search, ExternalLink, ArrowDownLeft, ArrowUpRight } from "lucide-react";
+import { Check, X, Shield, Clock, Search, ExternalLink, ArrowDownLeft, ArrowUpRight, Trash2 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
+import { deleteDoc } from "firebase/firestore";
 
 export default function AdminPanel() {
   const [deposits, setDeposits] = useState<Deposit[]>([]);
@@ -62,6 +63,15 @@ export default function AdminPanel() {
       await updateDoc(doc(db, collectionName, id), { status: "rejected" });
     } catch (error) {
       handleFirestoreError(error, OperationType.WRITE, `${collectionName}/${id}`);
+    }
+  };
+
+  const handleDelete = async (collectionName: "deposits" | "withdrawals", id: string) => {
+    if (!window.confirm("Are you sure you want to delete this record forever?")) return;
+    try {
+      await deleteDoc(doc(db, collectionName, id));
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, `${collectionName}/${id}`);
     }
   };
 
@@ -126,6 +136,14 @@ export default function AdminPanel() {
                 </div>
 
                 <div className="flex items-center gap-3 w-full md:w-auto">
+                  <button
+                    onClick={() => handleDelete("deposits", deposit.id!)}
+                    className="p-3 bg-zinc-800 text-zinc-500 hover:text-red-500 rounded-xl transition-all"
+                    title="Delete Record"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </button>
+
                   {deposit.status === 'pending' ? (
                     <>
                       <button
@@ -189,6 +207,14 @@ export default function AdminPanel() {
                 </div>
 
                 <div className="flex items-center gap-3 w-full md:w-auto">
+                  <button
+                    onClick={() => handleDelete("withdrawals", withdrawal.id!)}
+                    className="p-3 bg-zinc-800 text-zinc-500 hover:text-red-500 rounded-xl transition-all"
+                    title="Delete Record"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </button>
+
                   {withdrawal.status === 'pending' ? (
                     <>
                       <button

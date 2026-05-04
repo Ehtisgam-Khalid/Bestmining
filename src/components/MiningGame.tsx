@@ -139,7 +139,7 @@ export default function MiningGame({ user }: MiningGameProps) {
     }
   };
 
-  if (user.balance < 300 && gameState === "idle") {
+  if (user.balance < 50 && gameState === "idle") {
     return (
       <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-12 text-center relative overflow-hidden">
         <div className="absolute inset-0 bg-black/40 backdrop-blur-sm z-10 flex flex-col items-center justify-center p-6 text-center">
@@ -148,7 +148,7 @@ export default function MiningGame({ user }: MiningGameProps) {
           </div>
           <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">Game Locked</h2>
           <p className="text-zinc-400 max-w-xs mx-auto text-sm leading-relaxed">
-            Minimum balance of <span className="text-yellow-500 font-bold">300 PKR</span> required to play the Diamond Mine.
+            Minimum balance of <span className="text-yellow-500 font-bold">50 PKR</span> required to play the Diamond Mine.
           </p>
         </div>
         <div className="grid grid-cols-4 gap-4 opacity-10">

@@ -69,6 +69,7 @@ service cloud.firestore {
       allow update: if isAdmin() && 
         incoming().diff(existing()).affectedKeys().hasOnly(['status']) &&
         incoming().status in ['approved', 'rejected'];
+      allow delete: if isAdmin();
     }
 
     match /withdrawals/{withdrawalId} {
@@ -81,6 +82,7 @@ service cloud.firestore {
       allow update: if isAdmin() && 
         incoming().diff(existing()).affectedKeys().hasOnly(['status']) &&
         incoming().status in ['paid', 'rejected'];
+      allow delete: if isAdmin();
     }
   }
 }
