@@ -7,6 +7,7 @@ import Auth from "./components/Auth";
 import MiningGame from "./components/MiningGame";
 import DepositSection from "./components/DepositSection";
 import WithdrawSection from "./components/WithdrawSection";
+import HistorySection from "./components/HistorySection";
 import AdminPanel from "./components/AdminPanel";
 import { 
   LogOut, 
@@ -16,6 +17,7 @@ import {
   Wallet,
   ArrowDownCircle,
   ArrowUpCircle,
+  History,
   Menu,
   X
 } from "lucide-react";
@@ -24,7 +26,7 @@ import { motion, AnimatePresence } from "motion/react";
 export default function App() {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"game" | "deposit" | "withdraw" | "admin">("game");
+  const [activeTab, setActiveTab] = useState<"game" | "deposit" | "withdraw" | "history" | "admin">("game");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -110,6 +112,12 @@ export default function App() {
               >
                 <ArrowUpCircle className="w-4 h-4" /> Withdraw
               </button>
+              <button 
+                onClick={() => setActiveTab("history")}
+                className={`transition-colors flex items-center gap-2 ${activeTab === 'history' ? 'text-yellow-500' : 'text-zinc-400 hover:text-white'}`}
+              >
+                <History className="w-4 h-4" /> History
+              </button>
               {user.isAdmin && (
                 <button 
                   onClick={() => setActiveTab("admin")}
@@ -175,6 +183,12 @@ export default function App() {
                >
                  <ArrowUpCircle className="text-yellow-500" /> Withdraw
                </button>
+               <button 
+                 onClick={() => { setActiveTab("history"); setMobileMenuOpen(false); }}
+                 className="w-full text-left p-4 bg-zinc-900 rounded-2xl flex items-center gap-3 font-bold text-lg"
+               >
+                 <History className="text-yellow-500" /> My History
+               </button>
                {user.isAdmin && (
                  <button 
                    onClick={() => { setActiveTab("admin"); setMobileMenuOpen(false); }}
@@ -200,6 +214,7 @@ export default function App() {
               {activeTab === "game" && <MiningGame user={user} />}
               {activeTab === "deposit" && <DepositSection user={user} />}
               {activeTab === "withdraw" && <WithdrawSection user={user} />}
+              {activeTab === "history" && <HistorySection user={user} />}
               {activeTab === "admin" && user.isAdmin && <AdminPanel />}
             </motion.div>
          </AnimatePresence>

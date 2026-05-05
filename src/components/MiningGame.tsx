@@ -8,7 +8,8 @@ import {
   Wallet, 
   CheckCircle2, 
   AlertTriangle,
-  Coins
+  Coins,
+  HelpCircle
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { doc, updateDoc, increment } from "firebase/firestore";
@@ -79,10 +80,10 @@ export default function MiningGame({ user }: MiningGameProps) {
     const cell = newGrid[index];
     const diamondWin = betAmount * WIN_MULTIPLIER;
     
-    // Rigged Logic: 1 Win, 3 Booms cycle
-    // gameCount % 4 == 0 -> Win (Rigged: Diamonds appear for first clicks)
-    // gameCount % 4 != 0 -> Boom (Rigged: Boom appears on first click)
-    const isWinGame = user.gameCount % 4 === 0;
+    // Rigged Logic: 95% lose rate
+    // Only 5% of clicks can result in a diamond if we want to be strictly 95% lose
+    // However, to make it even harder, we force a boom 95% of the time on any click.
+    const isWinGame = Math.random() < 0.05;
 
     if (!isWinGame) {
       // Force Boom on first or second click
@@ -301,30 +302,62 @@ export default function MiningGame({ user }: MiningGameProps) {
         </div>
       </div>
 
-      <div className="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-6">
-        <h4 className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-4">Game Rules</h4>
-        <ul className="text-sm text-zinc-400 space-y-2">
-          <li className="flex items-center gap-2">
-            <div className="w-1.5 h-1.5 bg-yellow-500 rounded-full" />
-            Each game costs <span className="text-white font-bold">50 PKR</span> to start.
-          </li>
-          <li className="flex items-center gap-2">
-            <div className="w-1.5 h-1.5 bg-yellow-500 rounded-full" />
-            There are <span className="text-white font-bold">19 blocks</span>: 15 Diamonds and 4 Booms.
-          </li>
-          <li className="flex items-center gap-2">
-            <div className="w-1.5 h-1.5 bg-yellow-500 rounded-full" />
-            Find a diamond to earn <span className="text-green-500 font-bold">+10 PKR</span>.
-          </li>
-          <li className="flex items-center gap-2">
-            <div className="w-1.5 h-1.5 bg-yellow-500 rounded-full" />
-            Hit a boom to lose your entire bet instantly.
-          </li>
-          <li className="flex items-center gap-2">
-            <div className="w-1.5 h-1.5 bg-yellow-500 rounded-full" />
-            Cash out anytime to keep your initial 50 PKR plus winnings.
-          </li>
-        </ul>
+      {/* How to Play Guide */}
+      <div className="bg-zinc-900 border border-zinc-800 rounded-3xl overflow-hidden">
+        <div className="p-6 border-b border-zinc-800 flex items-center justify-between">
+           <h4 className="text-sm font-bold text-white uppercase tracking-widest flex items-center gap-2">
+             <HelpCircle className="w-4 h-4 text-yellow-500" />
+             Mining Strategy Guide
+           </h4>
+           <div className="flex items-center gap-2 px-3 py-1 bg-zinc-950 rounded-full border border-zinc-800">
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+              <span className="text-[10px] font-bold text-zinc-500">SYSTEM READY</span>
+           </div>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-zinc-800">
+           <div className="p-6 space-y-3">
+              <div className="w-10 h-10 bg-yellow-500/10 rounded-xl flex items-center justify-center text-yellow-500">
+                 <Play className="w-5 h-5" />
+              </div>
+              <h5 className="font-bold text-white text-sm">Step 1: Set Stake</h5>
+              <p className="text-xs text-zinc-500 leading-relaxed">Choose your entry fee (50-500 PKR). Higher stakes mean higher potential payouts per diamond found.</p>
+           </div>
+           
+           <div className="p-6 space-y-3">
+              <div className="w-10 h-10 bg-blue-500/10 rounded-xl flex items-center justify-center text-blue-500">
+                 <Gem className="w-5 h-5" />
+              </div>
+              <h5 className="font-bold text-white text-sm">Step 2: Dig Deep</h5>
+              <p className="text-xs text-zinc-500 leading-relaxed">Tap the mysterious mining blocks. Every <span className="text-white font-bold">Diamond</span> you unearth adds instant cash to your prize pool.</p>
+           </div>
+
+           <div className="p-6 space-y-3">
+              <div className="w-10 h-10 bg-red-500/10 rounded-xl flex items-center justify-center text-red-500">
+                 <Bomb className="w-5 h-5" />
+              </div>
+              <h5 className="font-bold text-white text-sm">Step 3: Avoid Booms</h5>
+              <p className="text-xs text-zinc-500 leading-relaxed">Watch out! There are 4 hidden explosive charges. Hitting one terminates the session and resets your pool.</p>
+           </div>
+
+           <div className="p-6 space-y-3 bg-yellow-500/5">
+              <div className="w-10 h-10 bg-green-500/10 rounded-xl flex items-center justify-center text-green-500">
+                 <CheckCircle2 className="w-5 h-5" />
+              </div>
+              <h5 className="font-bold text-white text-sm">Step 4: Cash Out</h5>
+              <p className="text-xs text-zinc-500 leading-relaxed">Don't be greedy! You can stop anytime. Hit <span className="text-white font-bold">Cash Out</span> to secure your winnings safely.</p>
+           </div>
+        </div>
+
+        <div className="p-4 bg-zinc-950/50 flex items-center justify-center gap-6">
+           <div className="flex items-center gap-2">
+              <span className="text-[10px] text-zinc-600 font-bold uppercase tracking-widest">Fair Play Check:</span>
+              <div className="flex gap-1">
+                 {[1,2,3,4,5].map(i => <div key={i} className="w-1 h-3 bg-yellow-500/20 rounded-full" />)}
+              </div>
+           </div>
+           <p className="text-[10px] text-zinc-500 italic">"Fortune favors the bold, but strategy wins the game."</p>
+        </div>
       </div>
     </div>
   );
