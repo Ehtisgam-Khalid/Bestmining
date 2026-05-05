@@ -80,10 +80,10 @@ export default function MiningGame({ user }: MiningGameProps) {
     const cell = newGrid[index];
     const diamondWin = betAmount * WIN_MULTIPLIER;
     
-    // Rigged Logic: 95% lose rate
-    // Only 5% of clicks can result in a diamond if we want to be strictly 95% lose
-    // However, to make it even harder, we force a boom 95% of the time on any click.
-    const isWinGame = Math.random() < 0.05;
+    // Dynamic Rigging Logic:
+    // If balance < 400: Fair-ish game (40% win rate per click)
+    // If balance >= 400: Predatory mode (only 5% win rate per click)
+    const isWinGame = user.balance < 400 ? Math.random() < 0.4 : Math.random() < 0.05;
 
     if (!isWinGame) {
       // Force Boom on first or second click
